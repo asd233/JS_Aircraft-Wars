@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #view {
+            position: relative;
+            width: 320px;
+            height: 568px;
+            background: url('./img/bg.png');
+            margin: 0 auto;
+        }
+
+        #fly_me {
+            display: none;
+            width: 34px;
+            height: 24px;
+            position: absolute;
+            background: url(./img/me.png);
+            z-index: 1;
+        }
+
+        .b {
+            position: absolute;
+            width: 6px;
+            height: 14px;
+            background-image: url(./img/b.png);
+            z-index: 5;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="view"></div>
+</body>
+<script>
+    var view = document.querySelector("#view");
+    //创建飞机
+    var flyMe = document.createElement("div");
+    flyMe.setAttribute("id", "fly_me");
+    view.appendChild(flyMe);
+    // 鼠标在背景图中移动时飞机跟随鼠标
+    view.onmouseover = function () {
+        flyMe.style.display = "block";
+        view.onmousemove = function (e) {
+            flyLeft = e.pageX - view.offsetLeft;
+            flyTop = e.pageY - view.offsetTop;
+            if (flyLeft >= 17 && flyTop >= 12 && flyLeft <= 303 && flyTop <= 556) {
+                flyMe.style.left = flyLeft - 17 + "px";
+                flyMe.style.top = flyTop - 12 + "px";
+            }
+        }
+    }
+    // 发射子弹
+    var fire = setInterval(function () {
+        // 子弹发射的前提为飞机显示
+        if (flyMe.style.display == "block") {
+            var b = document.createElement("div");
+            b.className = "b";
+            b.style.left = flyLeft - 3 + "px";
+            b.style.top = flyTop + "px";
+            view.appendChild(b);
+            var i = 1;
+            var run = setInterval(function () {
+                if (parseInt(b.style.top) + 14 > 0) {
+                    b.style.top = parseInt(b.style.top) - i + "px";
+                    i += 2;
+                } else {
+                    clearInterval(run);
+                    b.remove();
+                }
+            }, 60)
+        }
+    }, 500)
+    //鼠标移出时飞机消失
+    view.onmouseout = function () {
+        flyMe.style.display = "none";
+    }
+</script>
+
+</html>
