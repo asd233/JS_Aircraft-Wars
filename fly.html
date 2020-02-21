@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cn">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>飞机大战</title>
     <style>
         * {
             margin: 0;
@@ -18,6 +18,7 @@
             height: 568px;
             background: url('./img/bg.png');
             margin: 0 auto;
+            overflow: hidden;
         }
 
         #fly_me {
@@ -26,7 +27,7 @@
             height: 24px;
             position: absolute;
             background: url(./img/me.png);
-            z-index: 1;
+            z-index: 10;
         }
 
         .b {
@@ -36,12 +37,30 @@
             background-image: url(./img/b.png);
             z-index: 5;
         }
+
+        .enemy {
+            position: absolute;
+            width: 32px;
+            height: 24px;
+            background-image: url(./img/foe.png);
+            z-index: 5;
+        }
+
+        #scoreboard {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 20px;
+        }
     </style>
 
 </head>
 
 <body>
-    <div id="view"></div>
+    <div id="view">
+        <div id="scoreboard">当前得分为:0</div>
+    </div>
 </body>
 <script>
     var view = document.querySelector("#view");
@@ -70,18 +89,63 @@
             b.style.left = flyLeft - 3 + "px";
             b.style.top = flyTop + "px";
             view.appendChild(b);
-            var i = 1;
+            var i = 8;
             var run = setInterval(function () {
                 if (parseInt(b.style.top) + 14 > 0) {
                     b.style.top = parseInt(b.style.top) - i + "px";
-                    i += 2;
                 } else {
                     clearInterval(run);
                     b.remove();
                 }
             }, 60)
         }
-    }, 500)
+    }, 800)
+    //创建敌机
+    setInterval(function () {
+        // 子弹发射的前提为飞机显示
+        if (flyMe.style.display == "block") {
+            var enemyAirPlane = document.createElement("div");
+            enemyAirPlane.className = "enemy";
+            enemyAirPlane.style.left = Math.floor(Math.random() * (288 - 0 + 1) + 0) + "px";
+            enemyAirPlane.style.top = -24 + "px";
+            view.appendChild(enemyAirPlane);
+            var i = 8;
+            var run = setInterval(function () {
+                if (parseInt(enemyAirPlane.style.top) < 568) {
+                    enemyAirPlane.style.top = parseInt(enemyAirPlane.style.top) + i + "px";
+                } else {
+                    clearInterval(run);
+                    enemyAirPlane.remove();
+                }
+            }, 100)
+        }
+    }, 1000)
+    var scoreboard = document.querySelector("#scoreboard");
+    var score = 0;
+    //获取当前屏幕上的所有的敌机和子弹进行判断
+    setInterval(function () {
+        if (flyMe.style.display == "block") {
+            var bullet = document.querySelectorAll(".b");
+            var enemy = document.querySelectorAll(".enemy");
+            //每次使一个敌机的位置与屏幕上所有子弹的位置进行比较，重合时子弹与敌机同时消失
+            for (var i = 0; i < enemy.length; i++) {
+                for (var j = 0; j < bullet.length; j++) {
+                    var enemyLeft = parseInt(enemy[i].style.left);
+                    var bulletLeft = parseInt(bullet[j].style.left);
+                    var enemyTop = parseInt(enemy[i].style.top);
+                    var bulletTop = parseInt(bullet[j].style.top);
+                    var pdleft = bulletLeft >= enemyLeft && bulletLeft < enemyLeft + 32;
+                    var pdtop = bulletTop <= enemyTop + 24;
+                    if (pdleft && pdtop) {
+                        bullet[j].remove();
+                        enemy[i].remove();
+                        score++;
+                        scoreboard.innerText = "当前得分为:" + score;
+                    }
+                }
+            }
+        }
+    }, 30)
     //鼠标移出时飞机消失
     view.onmouseout = function () {
         flyMe.style.display = "none";
